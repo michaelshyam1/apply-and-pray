@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Upload,
-  Settings,
   Target,
   BookOpen,
 } from "lucide-react";
@@ -15,7 +14,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/upload", label: "Add Application", icon: Upload },
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {
