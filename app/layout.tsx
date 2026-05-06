@@ -10,10 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Applied & Prayed — Internship Application Tracker",
+  title: "Apply & Pray — Internship Application Tracker",
   description:
-    "Track every shot. Remember every prayer. AI-powered internship application tracker with Google Sheets sync.",
-  keywords: ["internship tracker", "job application", "AI", "Google Sheets"],
+    "Track every shot. Remember every prayer. Local AI-powered internship application tracker with Google Sheets sync.",
+  keywords: ["internship tracker", "job application", "Ollama", "Google Sheets"],
 };
 
 export default function RootLayout({

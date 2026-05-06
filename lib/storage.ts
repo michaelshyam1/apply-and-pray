@@ -2,7 +2,8 @@
 
 import type { Application } from "./types";
 
-const STORAGE_KEY = "aap_applications";
+const STORAGE_KEY    = "aap_applications";
+const LAST_SYNCED_KEY = "aap_last_synced";
 
 export function getApplications(): Application[] {
   if (typeof window === "undefined") return [];
@@ -27,10 +28,7 @@ export function addApplication(application: Application): Application[] {
   return updated;
 }
 
-export function updateApplication(
-  id: string,
-  updates: Partial<Application>
-): Application[] {
+export function updateApplication(id: string, updates: Partial<Application>): Application[] {
   const applications = getApplications();
   const updated = applications.map((a) =>
     a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a
@@ -44,4 +42,17 @@ export function deleteApplication(id: string): Application[] {
   const updated = applications.filter((a) => a.id !== id);
   saveApplications(updated);
   return updated;
+}
+
+// ── Last-synced timestamp ─────────────────────────────────────────────────────
+
+export function getLastSynced(): Date | null {
+  if (typeof window === "undefined") return null;
+  const ts = localStorage.getItem(LAST_SYNCED_KEY);
+  return ts ? new Date(ts) : null;
+}
+
+export function saveLastSynced(date: Date): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LAST_SYNCED_KEY, date.toISOString());
 }

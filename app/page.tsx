@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Target,
-  Upload,
+  Link2,
   Sparkles,
   TableProperties,
   ArrowRight,
@@ -12,6 +12,8 @@ import {
   Clock,
   CheckCircle2,
   Zap,
+  Cpu,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -26,17 +28,17 @@ const fadeUp = {
 
 const features = [
   {
-    icon: Upload,
-    title: "Screenshot to entry",
-    desc: "Drag in a screenshot of any job posting. AI extracts company, role, location, deadline, and salary automatically.",
+    icon: Link2,
+    title: "URL extraction",
+    desc: "Paste any public job posting URL. The app fetches the page server-side, parses the HTML, and sends the text to your local AI.",
     color: "text-indigo-400",
     bg: "bg-indigo-500/10",
     border: "border-indigo-500/20",
   },
   {
-    icon: Sparkles,
-    title: "Smart extraction",
-    desc: "GPT-4o Vision reads job postings with 90%+ accuracy. Manual edit support for anything it misses.",
+    icon: Cpu,
+    title: "100% local AI",
+    desc: "Runs on Ollama with llama3.2:3b. No API keys, no cloud costs, no data leaving your machine.",
     color: "text-violet-400",
     bg: "bg-violet-500/10",
     border: "border-violet-500/20",
@@ -44,7 +46,7 @@ const features = [
   {
     icon: TableProperties,
     title: "Google Sheets sync",
-    desc: "Every application syncs to a Google Sheet you own. Full data portability — export, share, or query anytime.",
+    desc: "Every application syncs to a Google Sheet you own. The sheet is the source of truth — both the browser and desktop app stay in sync.",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
@@ -52,7 +54,7 @@ const features = [
   {
     icon: Clock,
     title: "Deadline warnings",
-    desc: "Never miss a rolling deadline. Get visual warnings when applications close within 7 days.",
+    desc: "Never miss a rolling deadline. Amber and red warnings appear for applications closing within 7 days.",
     color: "text-amber-400",
     bg: "bg-amber-500/10",
     border: "border-amber-500/20",
@@ -60,7 +62,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Pipeline analytics",
-    desc: "Track your application velocity, response rate, and funnel conversion in real time.",
+    desc: "Track your application velocity, response rate, and status breakdown. See your hustle at a glance.",
     color: "text-blue-400",
     bg: "bg-blue-500/10",
     border: "border-blue-500/20",
@@ -68,7 +70,7 @@ const features = [
   {
     icon: Zap,
     title: "Duplicate detection",
-    desc: "Automatically catches if you accidentally apply to the same role twice.",
+    desc: "Automatically catches if you try to add the same company and role twice.",
     color: "text-orange-400",
     bg: "bg-orange-500/10",
     border: "border-orange-500/20",
@@ -76,8 +78,8 @@ const features = [
 ];
 
 const steps = [
-  { label: "Upload screenshot", desc: "Drag & drop any job posting or confirmation email" },
-  { label: "AI extracts details", desc: "Company, role, location, salary, deadline — all filled in" },
+  { label: "Paste a URL", desc: "Drop any public job posting URL into the input" },
+  { label: "Ollama extracts details", desc: "Company, role, location, salary, deadline — all filled in locally" },
   { label: "Review & confirm", desc: "Edit any field before saving" },
   { label: "Synced everywhere", desc: "Dashboard updated + Google Sheet appended instantly" },
 ];
@@ -93,7 +95,7 @@ export default function LandingPage() {
               <Target className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-semibold">
-              Applied<span className="text-indigo-400">&amp;</span>Prayed
+              Apply<span className="text-indigo-400">&amp;</span>Pray
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -109,7 +111,6 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-20 text-center">
-        {/* Background glow */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-[600px] w-[600px] rounded-full bg-indigo-500/5 blur-3xl" />
         </div>
@@ -120,8 +121,8 @@ export default function LandingPage() {
           className="relative z-10 max-w-3xl"
         >
           <motion.div variants={fadeUp} custom={0} className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs text-indigo-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            AI-powered · Works with any job site
+            <Cpu className="h-3.5 w-3.5" />
+            Local AI · No API costs · Google Sheets sync
           </motion.div>
 
           <motion.h1
@@ -139,14 +140,14 @@ export default function LandingPage() {
             custom={2}
             className="mt-6 max-w-xl mx-auto text-lg text-zinc-400 leading-relaxed"
           >
-            Upload a screenshot of any job posting. AI extracts the details.
-            Your pipeline stays organized — and synced to Google Sheets.
+            Paste a job URL. Local AI extracts the details.
+            Your pipeline stays organised — and synced to Google Sheets.
           </motion.p>
 
           <motion.div variants={fadeUp} custom={3} className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/upload">
               <Button size="lg" className="gap-2 shadow-lg shadow-indigo-500/20">
-                <Upload className="h-4 w-4" />
+                <Link2 className="h-4 w-4" />
                 Add your first application
                 <ArrowRight className="h-4 w-4" />
               </Button>
@@ -159,7 +160,7 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.div variants={fadeUp} custom={4} className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-600">
-            {["Free to use", "No account required", "Data stays yours", "Google Sheets included"].map((t) => (
+            {["No API keys needed", "Runs on Ollama", "Data stays yours", "Google Sheets included"].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-zinc-700" />
                 {t}
@@ -177,7 +178,7 @@ export default function LandingPage() {
               How it works
             </p>
             <h2 className="text-3xl font-bold text-zinc-100">
-              From screenshot to spreadsheet in seconds
+              From URL to spreadsheet in seconds
             </h2>
           </div>
 
@@ -255,7 +256,7 @@ export default function LandingPage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/upload">
               <Button size="lg" className="gap-2 shadow-lg shadow-indigo-500/20">
-                <Upload className="h-4 w-4" />
+                <Link2 className="h-4 w-4" />
                 Start tracking
               </Button>
             </Link>
@@ -268,7 +269,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-zinc-800 px-6 py-6 text-center">
         <p className="text-xs text-zinc-700">
-          Applied &amp; Prayed · Built for internship season
+          Apply &amp; Pray · Built for internship season
         </p>
       </footer>
     </div>

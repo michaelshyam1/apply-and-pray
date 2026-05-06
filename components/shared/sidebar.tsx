@@ -28,7 +28,7 @@ export function Sidebar() {
           <Target className="h-4 w-4 text-white" />
         </div>
         <span className="text-sm font-semibold text-zinc-100">
-          Applied<span className="text-indigo-400">&amp;</span>Prayed
+          Apply<span className="text-indigo-400">&amp;</span>Pray
         </span>
       </Link>
 

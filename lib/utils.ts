@@ -8,6 +8,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Generate a stable, deterministic ID from company + role + date.
+ * Used by both the client hook and the server sheet reader so both contexts
+ * assign the same ID to the same application record.
+ * Based on FNV-1a 32-bit hash.
+ */
+export function stableId(company: string, role: string, dateApplied: string): string {
+  const str = `${company.trim().toLowerCase()}|${role.trim().toLowerCase()}|${dateApplied.trim()}`;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+
 export function formatDate(dateStr: string | undefined): string {
   if (!dateStr) return "—";
   try {

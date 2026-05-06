@@ -4,10 +4,8 @@
 src-tauri/target/
 src-tauri/gen/
 
-# Generated icons — regenerate with: npm run tauri:icon
-# (commit app-icon.png source if you want, but not the outputs)
+# Generated PNG icons (large sizes, regenerate with: npm run tauri:icon)
 src-tauri/icons/*.png
-src-tauri/icons/*.ico
 
 # ============================================================
 # SECRETS — these files contain API keys and private keys
