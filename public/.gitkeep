@@ -1,0 +1,2 @@
+# This folder is kept for Tauri build compatibility.
+# In production, the app uses the embedded Next.js standalone server.

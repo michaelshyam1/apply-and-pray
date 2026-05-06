@@ -1,0 +1,161 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link2, PenLine, Cpu } from "lucide-react";
+import { AppShell } from "@/components/shared/app-shell";
+import { UploadZone } from "@/components/upload/upload-zone";
+import { ExtractionPreview } from "@/components/upload/extraction-preview";
+import { ManualEntryForm } from "@/components/upload/manual-entry-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useApplications } from "@/hooks/use-applications";
+import type { ExtractionResult } from "@/lib/types";
+import type { AIProvider } from "@/lib/ai-provider";
+
+export default function UploadPage() {
+  const router = useRouter();
+  const { add } = useApplications();
+  const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | undefined>();
+  const [isSaving, setIsSaving] = useState(false);
+  const [provider, setProvider] = useState<AIProvider | null>(null);
+  const [providerModel, setProviderModel] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/extract")
+      .then((r) => r.json())
+      .then((d: { provider: AIProvider; model: string }) => {
+        setProvider(d.provider);
+        setProviderModel(d.model);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleExtracted = (result: ExtractionResult, imgUrl?: string) => {
+    setExtraction(result);
+    setImageUrl(imgUrl);
+  };
+
+  const handleReset = () => {
+    setExtraction(null);
+    setImageUrl(undefined);
+  };
+
+  const handleConfirm = async (data: ExtractionResult) => {
+    setIsSaving(true);
+    const app = add(data);
+
+    if (app) {
+      fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "append", application: app }),
+      }).catch(() => {});
+
+      router.push("/dashboard");
+    }
+
+    setIsSaving(false);
+  };
+
+  return (
+    <AppShell>
+      <div className="flex flex-col gap-6 p-6 max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex items-start justify-between gap-4"
+        >
+          <div>
+            <h1 className="text-lg font-semibold text-zinc-100">Add Application</h1>
+            <p className="mt-0.5 text-sm text-zinc-500">
+              Paste a URL or enter details manually
+            </p>
+          </div>
+
+          {provider === "ollama" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 }}
+              className="shrink-0 flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1"
+            >
+              <Cpu className="h-3 w-3 text-emerald-400" />
+              <span className="text-xs font-medium text-emerald-400">
+                Local AI — no API costs
+              </span>
+            </motion.div>
+          )}
+        </motion.div>
+
+        <AnimatePresence mode="wait">
+          {extraction ? (
+            <motion.div
+              key="preview"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
+            >
+              <ExtractionPreview
+                extraction={extraction}
+                imageUrl={imageUrl}
+                onConfirm={handleConfirm}
+                onReset={handleReset}
+                isLoading={isSaving}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-4"
+            >
+              {/* URL/Manual is the primary tab */}
+              <Tabs defaultValue="url-manual">
+                <TabsList className="w-full">
+                  <TabsTrigger value="url-manual" className="flex-1 gap-2">
+                    <Link2 className="h-3.5 w-3.5" />
+                    URL / Manual
+                  </TabsTrigger>
+                  <TabsTrigger value="screenshot" className="flex-1 gap-2 text-zinc-500">
+                    <PenLine className="h-3.5 w-3.5" />
+                    Screenshot
+                    <span className="ml-1 rounded border border-zinc-700 px-1 py-px text-[10px] font-medium text-zinc-600">
+                      Experimental
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="url-manual" className="mt-4">
+                  <ManualEntryForm onExtracted={handleExtracted} />
+                </TabsContent>
+
+                <TabsContent value="screenshot" className="mt-4 space-y-3">
+                  <UploadZone onExtracted={handleExtracted} />
+                  <div className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2.5">
+                    <span className="mt-px text-amber-400">⚠</span>
+                    <p className="text-xs text-amber-400/80 leading-relaxed">
+                      <span className="font-medium text-amber-400">Experimental.</span>{" "}
+                      Screenshot extraction requires a local vision model (e.g.{" "}
+                      <code className="font-mono">qwen2.5vl:7b</code>). The current model{" "}
+                      {providerModel && (
+                        <code className="font-mono">{providerModel}</code>
+                      )}{" "}
+                      is text-only and will fail on images. Use URL mode instead.
+                    </p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </AppShell>
+  );
+}

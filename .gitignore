@@ -1,0 +1,119 @@
+# ============================================================
+# TAURI — Rust build artifacts (large, fully reproducible)
+# ============================================================
+src-tauri/target/
+src-tauri/gen/
+
+# Generated icons — regenerate with: npm run tauri:icon
+# (commit app-icon.png source if you want, but not the outputs)
+src-tauri/icons/*.png
+src-tauri/icons/*.ico
+
+# ============================================================
+# SECRETS — these files contain API keys and private keys
+# and must NEVER be committed to any repository
+# ============================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Service account JSON key files (if you ever download one)
+*service-account*.json
+*credentials*.json
+*serviceaccount*.json
+secrets/
+private/
+
+# ============================================================
+# DEPENDENCIES — reproducible via `npm install`
+# ============================================================
+node_modules/
+.npm/
+
+# ============================================================
+# NEXT.JS BUILD OUTPUT — generated on every build
+# ============================================================
+.next/
+out/
+
+# ============================================================
+# PRODUCTION BUILD ARTIFACTS
+# ============================================================
+build/
+dist/
+
+# ============================================================
+# TYPESCRIPT — incremental build cache
+# ============================================================
+*.tsbuildinfo
+next-env.d.ts
+
+# ============================================================
+# UPLOADS / SCREENSHOTS — user-generated, potentially large
+# ============================================================
+uploads/
+screenshots/
+temp/
+public/uploads/
+public/screenshots/
+
+# ============================================================
+# LOGS
+# ============================================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# ============================================================
+# OS-GENERATED FILES — no project value
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================================
+# CLAUDE CODE — project AI assistant settings (not for source control)
+# ============================================================
+.claude/
+
+# ============================================================
+# EDITOR CONFIG — machine-specific, belongs in global gitignore
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# LOCAL DATABASES — if you add sqlite/litestream later
+# ============================================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# ============================================================
+# DEPLOYMENT — platform-specific, generated on deploy
+# ============================================================
+.vercel/
+.netlify/
+
+# ============================================================
+# MISC
+# ============================================================
+.cache/
+*.pem
+*.orig
+*.rej
+*.bak
+.env.production
