@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link2, PenLine, Cpu } from "lucide-react";
+import { Link2, PenLine, Cpu, AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/shared/app-shell";
 import { UploadZone } from "@/components/upload/upload-zone";
 import { ExtractionPreview } from "@/components/upload/extraction-preview";
 import { ManualEntryForm } from "@/components/upload/manual-entry-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useApplications } from "@/hooks/use-applications";
+import type { DuplicateResult } from "@/hooks/use-applications";
 import type { ExtractionResult } from "@/lib/types";
 import type { AIProvider } from "@/lib/ai-provider";
 
@@ -21,6 +23,10 @@ export default function UploadPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [provider, setProvider] = useState<AIProvider | null>(null);
   const [providerModel, setProviderModel] = useState<string>("");
+
+  // Duplicate-warning state
+  const [pendingData, setPendingData] = useState<ExtractionResult | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<DuplicateResult | null>(null);
 
   useEffect(() => {
     fetch("/api/extract")
@@ -35,29 +41,59 @@ export default function UploadPage() {
   const handleExtracted = (result: ExtractionResult, imgUrl?: string) => {
     setExtraction(result);
     setImageUrl(imgUrl);
+    // Clear any previous duplicate warning when new extraction comes in
+    setDuplicateInfo(null);
+    setPendingData(null);
   };
 
   const handleReset = () => {
     setExtraction(null);
     setImageUrl(undefined);
+    setDuplicateInfo(null);
+    setPendingData(null);
   };
 
-  const handleConfirm = async (data: ExtractionResult) => {
+  const saveApplication = async (data: ExtractionResult, force = false) => {
     setIsSaving(true);
-    const app = add(data);
+    const outcome = add(data, force);
 
-    if (app) {
+    // Duplicate detected — surface warning, don't navigate away
+    if (outcome && "duplicate" in outcome) {
+      setPendingData(data);
+      setDuplicateInfo(outcome);
+      setIsSaving(false);
+      return;
+    }
+
+    if (outcome) {
+      // Fire-and-forget sheet append
       fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "append", application: app }),
+        body: JSON.stringify({ action: "append", application: outcome }),
       }).catch(() => {});
-
       router.push("/dashboard");
     }
 
     setIsSaving(false);
   };
+
+  const handleConfirm = (data: ExtractionResult) => saveApplication(data, false);
+
+  const handleAddAnyway = () => {
+    if (pendingData) {
+      setDuplicateInfo(null);
+      saveApplication(pendingData, true);
+      setPendingData(null);
+    }
+  };
+
+  const handleDismissDuplicate = () => {
+    setDuplicateInfo(null);
+    setPendingData(null);
+  };
+
+  const dup = duplicateInfo?.duplicate;
 
   return (
     <AppShell>
@@ -90,6 +126,47 @@ export default function UploadPage() {
           )}
         </motion.div>
 
+        {/* Duplicate warning banner */}
+        <AnimatePresence>
+          {dup && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4"
+            >
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-amber-400">
+                    Application already exists
+                  </p>
+                  <p className="mt-0.5 text-xs text-amber-400/70">
+                    {dup.reason === "url"
+                      ? "An entry with the same URL already exists"
+                      : `Already tracking ${dup.existingApp.company} – ${dup.existingApp.role}`}
+                    {" "}(status: {dup.existingApp.status}).
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddAnyway}
+                  className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+                >
+                  Add anyway
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleDismissDuplicate}
+                  className="text-zinc-500 hover:text-zinc-300">
+                  Cancel
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {extraction ? (
             <motion.div
@@ -116,7 +193,6 @@ export default function UploadPage() {
               transition={{ duration: 0.25 }}
               className="space-y-4"
             >
-              {/* URL/Manual is the primary tab */}
               <Tabs defaultValue="url-manual">
                 <TabsList className="w-full">
                   <TabsTrigger value="url-manual" className="flex-1 gap-2">
@@ -144,9 +220,7 @@ export default function UploadPage() {
                       <span className="font-medium text-amber-400">Experimental.</span>{" "}
                       Screenshot extraction requires a local vision model (e.g.{" "}
                       <code className="font-mono">qwen2.5vl:7b</code>). The current model{" "}
-                      {providerModel && (
-                        <code className="font-mono">{providerModel}</code>
-                      )}{" "}
+                      {providerModel && <code className="font-mono">{providerModel}</code>}{" "}
                       is text-only and will fail on images. Use URL mode instead.
                     </p>
                   </div>

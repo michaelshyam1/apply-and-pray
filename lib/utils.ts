@@ -1,8 +1,48 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { formatDistanceToNow, parseISO, isValid, differenceInDays } from "date-fns";
-import type { Application, DashboardStats, VelocityDataPoint } from "./types";
+import type { Application, DashboardStats, VelocityDataPoint, ExtractionResult } from "./types";
 import { ACTIVE_STATUSES } from "./constants";
+
+// ── Duplicate detection ───────────────────────────────────────────────────────
+
+export interface DuplicateMatch {
+  existingApp: Application;
+  /** 'url' is a definitive match; 'company-role' is a fuzzy match. */
+  reason: "url" | "company-role";
+}
+
+/**
+ * Check whether a candidate application already exists in the list.
+ * URL match takes priority (exact); falls back to normalised company + role.
+ */
+export function isDuplicateApplication(
+  applications: Application[],
+  candidate: Pick<ExtractionResult, "url" | "company" | "role">
+): DuplicateMatch | null {
+  // 1. URL match — strongest signal
+  if (
+    candidate.url &&
+    (candidate.url.startsWith("http://") || candidate.url.startsWith("https://"))
+  ) {
+    const urlMatch = applications.find((a) => a.url === candidate.url);
+    if (urlMatch) return { existingApp: urlMatch, reason: "url" };
+  }
+
+  // 2. Company + role fuzzy match (case-insensitive, trimmed)
+  const company = candidate.company?.toLowerCase().trim() ?? "";
+  const role    = candidate.role?.toLowerCase().trim()    ?? "";
+  if (company && role) {
+    const nameMatch = applications.find(
+      (a) =>
+        a.company.toLowerCase().trim() === company &&
+        a.role.toLowerCase().trim()    === role
+    );
+    if (nameMatch) return { existingApp: nameMatch, reason: "company-role" };
+  }
+
+  return null;
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

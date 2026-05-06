@@ -11,6 +11,8 @@ import {
   ChevronDown,
   Search,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { openExternalUrl } from "@/lib/open-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -245,28 +247,33 @@ export function ApplicationTable({ applications, onUpdate, onDelete }: Applicati
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {app.url && (
+                      <TooltipProvider delayDuration={300}>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {app.url && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => openExternalUrl(app.url)}
+                                >
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Open job posting</TooltipContent>
+                            </Tooltip>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
-                            asChild
+                            className="h-7 w-7 text-zinc-600 hover:text-red-400"
+                            onClick={() => onDelete(app.id)}
                           >
-                            <a href={app.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-zinc-600 hover:text-red-400"
-                          onClick={() => onDelete(app.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                        </div>
+                      </TooltipProvider>
                     </td>
                   </motion.tr>
                 ))

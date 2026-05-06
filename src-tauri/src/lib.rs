@@ -99,11 +99,26 @@ fn ollama_running() -> bool {
     port_open(11434)
 }
 
+/// Open a URL in the user's default browser.
+/// Uses `cmd /C start` on Windows — the only reliable way to escape the WebView.
+#[tauri::command]
+fn open_in_browser(url: String) -> Result<(), String> {
+    if !url.starts_with("http://") && !url.starts_with("https://") {
+        return Err("Not a valid http/https URL".to_string());
+    }
+    std::process::Command::new("cmd")
+        .args(["/C", "start", "", &url])
+        .spawn()
+        .map_err(|e| format!("Failed to open URL: {e}"))?;
+    Ok(())
+}
+
 // ── App entry point ───────────────────────────────────────────────────────────
 
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .manage(NextServer(Mutex::new(None)))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -230,7 +245,7 @@ pub fn run() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![ollama_running])
+        .invoke_handler(tauri::generate_handler![ollama_running, open_in_browser])
         .run(tauri::generate_context!())
         .expect("Tauri application error");
 }
